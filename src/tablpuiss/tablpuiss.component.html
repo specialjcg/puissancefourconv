@@ -1,0 +1,56 @@
+<div>
+<table class="styled-table" >
+
+  <ng-container >
+    <tr *ngFor="let row of [0,1,2,3,4,5].reverse()">
+      <td *ngFor="let column of [0,1,2,3,4,5,6]" (click)="game(column)">
+        <span *ngIf="print(column,row)===1" class="dotRED"></span>
+        <span *ngIf="print(column,row)===2" class="dotBLUE"></span>
+        <span *ngIf="print(column,row)===0" class="dotTransparent"></span>
+      </td>
+    </tr>
+  </ng-container>
+</table>
+<button class="btn" (click)="allGridRedWin()">verif red win</button>
+<button class="btn" (click)="reset()">reset</button>&nbsp;
+<button class="btn" (click)="gameIA()">IAGame</button>
+  <button class="btn" (click)="gamelearnIA()">IAlearnGame</button>
+  <button class="btn" (click)="savebrain1()">saveblue</button>
+  <button class="btn" (click)="savebrain2()">savered</button>
+
+<button class="btn" (click)="loadbrain1()">loadblue</button>
+  <button class="btn" (click)="loadbrain2()">loadred</button>
+  <button class="btn" >{{this.lastscore}}</button>
+<h1>{{this.vainqueur}}</h1>&nbsp;
+</div>
+
+<table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+  <!--- Note that these columns can be defined in any order.
+        The actual rendered columns are set as a property on the row definition" -->
+
+  <!-- Position Column -->
+  <ng-container matColumnDef="numberGame">
+    <th class="title" mat-header-cell *matHeaderCellDef> numberGame </th>
+    <td mat-cell *matCellDef="let element"> {{element.numberGame}} </td>
+  </ng-container>
+
+  <!-- Name Column -->
+  <ng-container matColumnDef="blue">
+    <th class="title" mat-header-cell *matHeaderCellDef> blue </th>
+    <td mat-cell *matCellDef="let element"> {{element.blue}} </td>
+  </ng-container>
+
+  <!-- Weight Column -->
+  <ng-container matColumnDef="red">
+    <th class="title" mat-header-cell *matHeaderCellDef> red </th>
+    <td mat-cell *matCellDef="let element"> {{element.red}} </td>
+  </ng-container>
+
+
+  <tr  mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+</table>
+<app-line-chart  [data]=datared ></app-line-chart>
+<app-bar-chart [data]=databar ></app-bar-chart>

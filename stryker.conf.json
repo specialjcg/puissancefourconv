@@ -1,0 +1,17 @@
+{
+    "mutate": ["src/**/*.ts"],
+    "testRunner": "jest",
+    "testFramework": "jest",
+    "reporter": ["html"],
+    "coverageAnalysis": "off",
+
+    "tsconfigFile": "tsconfig.json",
+    "packageManager": "npm",
+    "allowUnreachableCode": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "htmlReporter": {
+      "baseDir": "reports/mutation/html"
+    }
+
+}

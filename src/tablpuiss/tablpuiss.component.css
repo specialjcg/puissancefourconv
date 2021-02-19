@@ -1,0 +1,84 @@
+.styled-table {
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 0.9em;
+  font-family: sans-serif;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+
+.styled-table th, td{
+  border: 1px solid black;
+  padding: 10px;
+}
+
+.dotBLUE {
+  height: 50px;
+  width: 50px;
+  background-color: #124add;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dotRED {
+  height: 50px;
+  width: 50px;
+  background-color: #f50f0f;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dotTransparent {
+  height: 50px;
+  width: 50px;
+  background-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+}
+.btn {
+  background: #34d9a2;
+  background-image: -webkit-linear-gradient(top, #34d9a2, #92b82b);
+  background-image: -moz-linear-gradient(top, #34d9a2, #92b82b);
+  background-image: -ms-linear-gradient(top, #34d9a2, #92b82b);
+  background-image: -o-linear-gradient(top, #34d9a2, #92b82b);
+  background-image: linear-gradient(to bottom, #34d9a2, #92b82b);
+  -webkit-border-radius: 28;
+  -moz-border-radius: 28;
+  border-radius: 28px;
+  font-family: serif;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: #3cb0fd;
+  background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -moz-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -ms-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -o-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+  text-decoration: none;
+}
+.title {
+  background: #34d9a2;
+  background-image: -webkit-linear-gradient(top, #34d9a2, #92b82b);
+  background-image: -moz-linear-gradient(top, #34d9a2, #92b82b);
+  background-image: -ms-linear-gradient(top, #34d9a2, #92b82b);
+  background-image: -o-linear-gradient(top, #34d9a2, #92b82b);
+  background-image: linear-gradient(to bottom, #34d9a2, #92b82b);
+  font-family: serif;
+  font-size: 24px;
+
+  height: 54px;
+  width: 25%;
+  font-weight: bold;
+  color: black;
+}
+th, td{
+  border: 1px solid black;
+  padding: 10px;
+  align-content: center;
+  text-align: center;
+}
+table tr th { text-align:center; }
