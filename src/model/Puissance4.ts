@@ -6,30 +6,35 @@ export enum Ring {
 
 export type COLUMN = Ring[];
 export type LINE = Ring[];
+export type DIAG = Ring[];
 
 
-const FIRSTREWARD = 0.8;
+export const FIRSTREWARD = 0.9;
 
-const SECONDREWARD = 0.6;
+export const SECONDREWARD = 0.7;
 
-const THIRDREWARD = 0.4;
+export const THIRDREWARD = 0.5;
 
-const LASTREWARD = 0.2;
+export const LASTREWARD = 0.2;
 
 export class Grid {
   gridColumn: COLUMN[];
   getscoreRed: number;
   getscoreBlue: number;
   gridLine: LINE[];
+  gridDiagLeft: DIAG[];
+  gridDiagRight: DIAG[];
   private readonly LINE = 6;
   private readonly COLUMN = 7;
 
   constructor() {
     this.gridColumn = Array.from({length: this.COLUMN}).map(() => []);
-    this.gridLine = Array.from({length: this.LINE}).map(() => []);
+    this.gridLine = Array.from({length: this.LINE}).map(() => Array.from({length: this.COLUMN}).map(() => 0));
+    this.gridDiagLeft = Array.from({length: this.LINE + this.COLUMN}).map(() => Array.from({length: this.COLUMN + this.LINE - 1}).map(() => 0));
+    this.gridDiagRight = Array.from({length: this.LINE + this.COLUMN - 1}).map(() => Array.from({length: this.COLUMN + this.LINE - 1}).map(() => 0));
 
-    this.getscoreRed = -LASTREWARD;
-    this.getscoreBlue = -LASTREWARD;
+    this.getscoreRed = 0;
+    this.getscoreBlue = 0;
 
   }
 
@@ -73,169 +78,125 @@ export class Grid {
   }
 
   full(): boolean {
-    return this.gridColumn.reduce((val, column) => val + column.length, 0) === 42;
+    return this.gridColumn.reduce((val, column) => val + column.length, 0) > 41;
   }
 
   scoreBlue(): number {
+    if (this.IsFourRingFollowingInLine(Ring.BLUE) || this.IsFourRingFollowingDiagLeft(Ring.BLUE)
+      || this.IsFourRingFollowingDiagRight(Ring.BLUE) || this.IsFourRingFollowingInColumn(Ring.BLUE)) {
+      return 1;
+    } else if (this.IsFourRingFollowingInLine(Ring.RED) || this.IsFourRingFollowingDiagLeft(Ring.RED)
+      || this.IsFourRingFollowingDiagRight(Ring.RED) || this.IsFourRingFollowingInColumn(Ring.RED)) {
+      return -1;
 
-
-    const scoreColumnBlue = this.ScoreRingFollowingInColumn(Ring.BLUE);
-    const scoreColumnRed = this.ScoreRingFollowingInColumn(Ring.RED);
-    const scoreLineBlue = this.ScoreRingFollowingInLinen(Ring.BLUE);
-    const scoreLineRed = this.ScoreRingFollowingInLinen(Ring.RED);
-    const scorediagBlue = this.ScoreRingFollowingInDiag(Ring.BLUE);
-    const scorediagRed = this.ScoreRingFollowingInDiag(Ring.RED);
-    const scoreRingFollowCollumn = this.ScoreRingFollowingCollumn(Ring.BLUE, Ring.RED);
-    const scoreRingFollowLine = this.ScoreRingFollowingLine(Ring.BLUE, Ring.RED);
-    const scorediagBlueFollowLine = this.ScorediagFollowing(Ring.BLUE, Ring.RED);
-    if (scorediagBlueFollowLine < 0 && this.getscoreBlue > scorediagBlueFollowLine) {
-      this.getscoreBlue = scorediagBlueFollowLine;
+    } else if (this.IsLastRingInColumn(Ring.BLUE, Ring.RED) || this.IsLastRingInLine(Ring.BLUE, Ring.RED)
+      || this.IsLastRingInDiagLeft(Ring.BLUE, Ring.RED) || this.IsLastRingInDiagRight(Ring.BLUE, Ring.RED)) {
+      return FIRSTREWARD;
+    } else if (this.IsThreeRingInColumn(Ring.BLUE) || this.IsThreeRingInLine(Ring.BLUE)
+      || this.IsThreeRingInDiagLeft(Ring.BLUE) || this.IsThreeRingInDiagRight(Ring.BLUE)) {
+      return SECONDREWARD;
+    } else if (this.IsTwoRingInColumn(Ring.BLUE) || this.IsTwoRingInLine(Ring.BLUE)
+      || this.IsTwoRingInDiagLeft(Ring.BLUE) || this.IsTwoRingInDiagRight(Ring.BLUE)) {
+      return THIRDREWARD;
     }
-    if (scoreRingFollowCollumn < 0 && this.getscoreBlue > scoreRingFollowCollumn) {
-      this.getscoreBlue = scoreRingFollowCollumn;
-    }
-    if (scoreRingFollowLine < 0 && this.getscoreBlue > scoreRingFollowLine) {
-      this.getscoreBlue = scoreRingFollowLine;
-    }
-    if (scoreRingFollowCollumn > 0 && this.getscoreBlue > scoreRingFollowCollumn) {
-      this.getscoreBlue = scoreRingFollowCollumn;
-    }
-    if (scoreRingFollowLine > 0 && this.getscoreBlue > scoreRingFollowLine) {
-      this.getscoreBlue = scoreRingFollowLine;
-    }
-    if (scorediagBlueFollowLine > 0 && this.getscoreBlue > scorediagBlueFollowLine) {
-      this.getscoreBlue = scorediagBlueFollowLine;
-    }
-
-    if (this.getscoreBlue < scoreColumnBlue) {
-      this.getscoreBlue = scoreColumnBlue;
-    }
-    if (this.getscoreBlue < scoreLineBlue) {
-      this.getscoreBlue = scoreLineBlue;
-    }
-    if (this.getscoreBlue < scorediagBlue) {
-      this.getscoreBlue = scorediagBlue;
-    }
-    if (this.getscoreBlue <= scoreColumnRed || this.getscoreBlue <= scoreLineRed || this.getscoreBlue <= scorediagRed ) {
-      this.getscoreBlue = -1;
-
-    }
-    return this.getscoreBlue;
+    return LASTREWARD;
   }
 
   scoreRed(): number {
 
-    const scoreColumnBlue = this.ScoreRingFollowingInColumn(Ring.BLUE);
-    const scoreColumnRed = this.ScoreRingFollowingInColumn(Ring.RED);
-    const scoreLineBlue = this.ScoreRingFollowingInLinen(Ring.BLUE);
-    const scoreLineRed = this.ScoreRingFollowingInLinen(Ring.RED);
-    const scorediagBlue = this.ScoreRingFollowingInDiag(Ring.BLUE);
-    const scorediagRed = this.ScoreRingFollowingInDiag(Ring.RED);
-    const scoreRingFollowCollumn = this.ScoreRingFollowingCollumn(Ring.RED, Ring.BLUE);
-    const scoreRingFollowLine = this.ScoreRingFollowingLine(Ring.RED, Ring.BLUE);
-    const scorediagBlueFollowLine = this.ScorediagFollowing(Ring.RED, Ring.BLUE);
-    if (scorediagBlueFollowLine < 0 && this.getscoreRed > scorediagBlueFollowLine) {
-      this.getscoreRed = scorediagBlueFollowLine;
-    }
-    if (scoreRingFollowCollumn < 0 && this.getscoreRed > scoreRingFollowCollumn) {
-      this.getscoreRed = scoreRingFollowCollumn;
-    }
-    if (scoreRingFollowLine < 0 && this.getscoreRed > scoreRingFollowLine) {
-      this.getscoreRed = scoreRingFollowLine;
-    }
-    if (scoreRingFollowCollumn > 0 && this.getscoreRed > scoreRingFollowCollumn) {
-      this.getscoreRed = scoreRingFollowCollumn;
-    }
-    if (scoreRingFollowLine > 0 && this.getscoreRed > scoreRingFollowLine) {
-      this.getscoreRed = scoreRingFollowLine;
-    }
-    if (scorediagBlueFollowLine > 0 && this.getscoreRed > scorediagBlueFollowLine) {
-      this.getscoreRed = scorediagBlueFollowLine;
-    }
-    if (this.getscoreRed < scoreColumnRed) {
-      this.getscoreRed = scoreColumnRed;
-    }
-    if (this.getscoreRed < scoreLineRed) {
-      this.getscoreRed = scoreLineRed;
-    }
-    if (this.getscoreRed < scorediagRed) {
-      this.getscoreRed = scorediagRed;
-    }
-    if (this.getscoreRed <= scoreColumnBlue || this.getscoreRed <= scoreLineBlue || this.getscoreRed <= scorediagBlue) {
-      this.getscoreRed = -1;
+    if (this.IsFourRingFollowingInLine(Ring.RED) || this.IsFourRingFollowingDiagLeft(Ring.RED)
+      || this.IsFourRingFollowingDiagRight(Ring.RED) || this.IsFourRingFollowingInColumn(Ring.RED)) {
+      return 1;
+    } else if (this.IsFourRingFollowingInLine(Ring.BLUE) || this.IsFourRingFollowingDiagLeft(Ring.BLUE)
+      || this.IsFourRingFollowingDiagRight(Ring.BLUE) || this.IsFourRingFollowingInColumn(Ring.BLUE)) {
+      return -1;
 
+    } else if (this.IsLastRingInColumn(Ring.RED, Ring.BLUE) || this.IsLastRingInLine(Ring.RED, Ring.BLUE)
+      || this.IsLastRingInDiagLeft(Ring.RED, Ring.BLUE) || this.IsLastRingInDiagRight(Ring.RED, Ring.BLUE)) {
+      return FIRSTREWARD;
+    } else if (this.IsThreeRingInColumn(Ring.RED) || this.IsThreeRingInLine(Ring.RED)
+      || this.IsThreeRingInDiagLeft(Ring.RED) || this.IsThreeRingInDiagRight(Ring.RED)) {
+      return SECONDREWARD;
+    } else if (this.IsTwoRingInColumn(Ring.RED) || this.IsTwoRingInLine(Ring.RED)
+      || this.IsTwoRingInDiagLeft(Ring.RED) || this.IsTwoRingInDiagRight(Ring.RED)) {
+      return THIRDREWARD;
     }
-    return this.getscoreRed;
+    return LASTREWARD;
   }
 
-  convertToLine(): void {
-    this.gridColumn.map((col, indexcol) => col.map((line, indexLine) => this.gridLine[indexLine][indexcol] = line));
-  }
 
   isInGrid(column: number): boolean {
     return column <= this.COLUMN && this.numberRings(column) < this.LINE;
   }
 
+
+  rewardBlue(): number {
+    const scoreRed = this.scoreRed();
+    const scoreBlue = this.scoreBlue();
+    if (scoreBlue > scoreRed) {
+      return scoreBlue;
+    }
+    if (scoreRed === scoreBlue) {
+      return scoreBlue;
+    }
+
+    return -scoreRed;
+  }
+
+  rewardRed(): number {
+    const scoreRed = this.scoreRed();
+    const scoreBlue = this.scoreBlue();
+    if (scoreRed > scoreBlue) {
+      return scoreRed;
+    }
+    if (scoreRed === scoreBlue) {
+      return scoreRed;
+    }
+
+    return -scoreBlue;
+
+  }
+
+  IsLastRingInColumn(ring: Ring, ringAdverse: Ring): boolean {
+    return this.gridColumn.some(col => {
+      return col.slice(-4, col.length).toString().includes([ringAdverse, ringAdverse, ringAdverse, ring].toString());
+    });
+
+  }
+
+  IsLastRingInLine(ring: Ring, ringAdverse: Ring): boolean {
+    return this.gridLine.some(line => {
+      return line.toString().includes([ring, ringAdverse, ring].toString()) ||
+        line.toString().includes([ring, ringAdverse, ringAdverse, ring].toString()) ||
+        line.toString().includes([ring, ringAdverse, ringAdverse, ringAdverse, ring].toString()) ||
+        line.slice(0, 4).toString().includes([ringAdverse, ringAdverse, ringAdverse, ring].toString());
+
+    });
+  }
+
+  IsThreeRingInLine(ring: Ring): boolean {
+    return this.gridLine.some(line => {
+      return line.toString().includes([ring, ring, ring].toString()) ||
+        line.toString().includes([ring, ring, 0, ring].toString()) ||
+        line.toString().includes([ring, 0, ring, ring].toString());
+    });
+  }
+
   private addRing(column: number, player: Ring): void {
     if (this.isInGrid(column)) {
       this.gridColumn[column - 1].push(player);
+      this.gridLine[this.gridColumn[column - 1].length - 1][column - 1] = player;
+      this.gridDiagRight[column + this.gridColumn[column - 1].length - 2][column - 1] = player;
+      this.gridDiagLeft[this.COLUMN - column + this.gridColumn[column - 1].length][column - 1] = player;
+
     }
-    this.convertToLine();
+
   }
 
   private IsFourRingFollowingInColumn(ring: Ring): boolean {
     return this.gridColumn.some(column => {
       return column.toString().includes([ring, ring, ring, ring].toString());
     });
-  }
-
-  private ScoreRingFollowingInColumn(ring: Ring): number {
-    if (this.gridColumn.some(line => {
-      return line.toString().includes([ring, ring, ring, ring].toString());
-    })) {
-      return 1;
-    }
-    if (this.gridColumn.some(line => {
-      return line.slice(-3, line.length).toString().includes([ring, ring, ring].toString());
-    })) {
-      return FIRSTREWARD;
-    }
-    if (this.gridColumn.some(line => {
-      return line.slice(-2, line.length).toString().includes([ring, ring].toString());
-    })) {
-      return SECONDREWARD;
-    }
-    if (this.gridColumn.some(line => {
-      return line.slice(-1, line.length).toString().includes([ring].toString());
-    })) {
-      return THIRDREWARD;
-    }
-    return -1;
-  }
-
-  private ScoreRingFollowingInLinen(ring: Ring): number {
-    if (this.gridLine.some(line => {
-      return line.toString().includes([ring, ring, ring, ring].toString());
-    })) {
-      return 1;
-    }
-
-    if (this.gridLine.some(line => {
-      return line.slice(-3, line.length).toString().includes([ring, ring, ring].toString());
-    })) {
-      return THIRDREWARD;
-    }
-    if (this.gridLine.some(line => {
-      return line.slice(-2, line.length).toString().includes([ring, ring].toString());
-    })) {
-      return SECONDREWARD;
-    }
-    if (this.gridLine.some(line => {
-      return line.slice(-1, line.length).toString().includes([ring].toString());
-    })) {
-      return LASTREWARD;
-    }
-    return -1;
   }
 
   private IsFourRingFollowingInLine(ring: Ring): boolean {
@@ -245,125 +206,70 @@ export class Grid {
   }
 
   private IsFourRingFollowingDiagLeft(ring: Ring): boolean {
-    for (let line = 0; line < 3; line++) {
-      for (let column = 0; column < 4; column++) {
-
-        if (this.gridColumn[column] !== undefined && this.gridColumn[column][line] === ring &&
-          this.gridColumn[column + 1][line + 1] === ring &&
-          this.gridColumn[column + 2][line + 2] === ring &&
-          this.gridColumn[column + 3][line + 3] === ring
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return this.gridDiagLeft.some(line => {
+      return line.toString().includes([ring, ring, ring, ring].toString());
+    });
   }
 
   private IsFourRingFollowingDiagRight(ring: Ring): boolean {
-    for (let line = 0; line < 3; line++) {
-      for (let column = 3; column < this.COLUMN; column++) {
-
-        if (this.gridColumn[column] !== undefined && this.gridColumn[column][line] === ring &&
-          this.gridColumn[column - 1][line + 1] === ring &&
-          this.gridColumn[column - 2][line + 2] === ring &&
-          this.gridColumn[column - 3][line + 3] === ring
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return this.gridDiagRight.some(line => {
+      return line.toString().includes([ring, ring, ring, ring].toString());
+    });
   }
 
-  private ScoreRingFollowingInDiag(ring: Ring): number {
-    for (let line = 0; line < 3; line++) {
-      for (let column = 0; column < 4; column++) {
-
-        if (this.gridColumn[column] !== undefined && this.gridColumn[column][line] === ring &&
-          this.gridColumn[column + 1][line + 1] === ring &&
-          this.gridColumn[column + 2][line + 2] === ring &&
-          this.gridColumn[column + 3][line + 3] === ring
-        ) {
-          return FIRSTREWARD;
-        }
-      }
-    }
-    for (let line = 0; line < 3; line++) {
-      for (let column = 0; column < 4; column++) {
-
-        if (this.gridColumn[column] !== undefined && this.gridColumn[column][line] === ring &&
-          this.gridColumn[column + 1][line + 1] === ring &&
-          this.gridColumn[column + 2][line + 2] === ring
-
-        ) {
-          return SECONDREWARD;
-        }
-      }
-    }
-    for (let line = 0; line < 3; line++) {
-      for (let column = 0; column < 4; column++) {
-
-        if (this.gridColumn[column] !== undefined && this.gridColumn[column][line] === ring &&
-          this.gridColumn[column + 1][line + 1] === ring
-
-
-        ) {
-          return THIRDREWARD;
-        }
-      }
-    }
-    for (let line = 0; line < 3; line++) {
-      for (let column = 0; column < 4; column++) {
-
-        if (this.gridColumn[column] !== undefined && this.gridColumn[column][line] === ring
-
-
-        ) {
-          return LASTREWARD;
-        }
-      }
-    }
-    return -1;
+  private IsLastRingInDiagLeft(ring: Ring, ringAdverse: Ring): boolean {
+    return this.gridDiagLeft.some(line => {
+      return line.slice(-4, line.length).toString().includes([ringAdverse, ringAdverse, ringAdverse, ring].toString());
+    });
   }
 
-  private ScoreRingFollowingCollumn(ring: Ring, ringAdverse: Ring): number {
-    let result = -1;
-    if (this.gridColumn.some(line => {
-      return line.slice(-2, line.length).toString().includes([ringAdverse, ring].toString());
-    })) {
-      result = FIRSTREWARD;
-    }
-
-    return result;
-  }
-  private ScoreRingFollowingLine(ring: Ring, ringAdverse: Ring): number {
-    let result = -1;
-    if (this.gridLine.some(line => {
-      return line.slice(-2, line.length).toString().includes([ringAdverse, ring].toString());
-    })) {
-      result = FIRSTREWARD;
-    }
-
-    return result;
+  private IsLastRingInDiagRight(ring: Ring, ringAdverse: Ring): boolean {
+    return this.gridDiagRight.some(line => {
+      return line.slice(-4, line.length).toString().includes([ringAdverse, ringAdverse, ringAdverse, ring].toString());
+    });
   }
 
-  private ScorediagFollowing(ring: Ring, ringAdverse: Ring): number {
+  IsThreeRingInColumn(ring: Ring): boolean {
+    return this.gridColumn.some(col => {
+      return col.toString().includes([ring, ring, ring, 0].toString());
+    });
+  }
 
-    for (let line = 0; line < 3; line++) {
-      for (let column = 0; column < 4; column++) {
+  private IsThreeRingInDiagLeft(ring: Ring): boolean {
+    return this.gridDiagLeft.filter(linediag => linediag.length > 3).some(line => {
+      return line.slice(-3, line.length).toString().includes([ring, ring, ring].toString());
+    });
+  }
 
-        if (this.gridColumn[column] !== undefined && this.gridColumn[column][line] === ringAdverse &&
-          this.gridColumn[column + 1][line + 1] === ring
+  private IsThreeRingInDiagRight(ring: Ring): boolean {
+    return this.gridDiagRight.filter(linediag => linediag.length > 3).some(line => {
+      return line.slice(-3, line.length).toString().includes([ring, ring, ring].toString());
+    });
+  }
 
+  private IsTwoRingInColumn(ring: Ring): boolean {
+    return this.gridColumn.some(col => {
+      return col.toString().includes([ring, ring, 0].toString());
+    });
+  }
 
-        ) {
-          return FIRSTREWARD;
-        }
-      }
-    }
+  private IsTwoRingInLine(ring: Ring): boolean {
+    return this.gridLine.some(line => {
+      return line.toString().includes([ring, ring].toString()) ||
+        line.toString().includes([ring, 0, ring].toString());
+    });
+  }
 
-    return -1;
+  private IsTwoRingInDiagLeft(ring: Ring): boolean {
+    return this.gridDiagLeft.filter(linediag => linediag.length > 3).some(line => {
+      return line.slice(-2, line.length).toString().includes([ring, ring].toString());
+    });
+  }
+
+  private IsTwoRingInDiagRight(ring: Ring): boolean {
+    return this.gridDiagRight.filter(linediag => linediag.length > 3).some(line => {
+      return line.slice(-2, line.length).toString().includes([ring, ring].toString());
+    });
   }
 }
 

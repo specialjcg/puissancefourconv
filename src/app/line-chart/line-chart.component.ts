@@ -4,6 +4,7 @@ import * as d3Scale from 'd3-scale';
 import * as d3Shape from 'd3-shape';
 
 import * as d3js from 'd3';
+
 @Component({
   selector: 'app-line-chart',
   templateUrl: './line-chart.component.html',
@@ -27,7 +28,6 @@ export class LineChartComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-
     this.buildSvg();
     this.addXandYAxis();
     this.drawLineAndPath();
@@ -51,9 +51,9 @@ export class LineChartComponent implements OnInit, OnChanges {
 
   private addXandYAxis(): void {
     // range of data configuring
-    this.x = d3Scale.scaleLinear().range([0, this.width-100]);
+    this.x = d3Scale.scaleLinear().range([0, this.width - 100]);
     this.y = d3Scale.scaleLinear().range([this.height, 0]);
-    this.x.domain([0, 500]).nice();
+    this.x.domain([0, 800]).nice();
     this.y.domain([0, 100]);
     const yaxis = d3js.axisLeft(this.y);
     const xaxis = d3js.axisBottom(this.x);
@@ -70,17 +70,20 @@ export class LineChartComponent implements OnInit, OnChanges {
   }
 
   private drawLineAndPath(): void {
-    this.line = d3Shape.line()
-      .x((d: any) => this.x(d.numberGame))
-      .y((d: any) => this.y(d.blue));
-    // Configuring line path
-    this.svg.append('path')
-      .datum(this.data)
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 2)
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .attr('d', this.line);
+
+      this.line = d3Shape.line()
+        .x((d: any) => this.x(d.numberGame))
+        .y((d: any) => this.y(d.blue));
+      // Configuring line path
+     if (this.line !==  undefined) {
+      this.svg.append('path')
+        .datum(this.data)
+        .attr('fill', 'none')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 2)
+        .attr('stroke-linejoin', 'round')
+        .attr('stroke-linecap', 'round')
+        .attr('d', this.line);
+    }
   }
 }

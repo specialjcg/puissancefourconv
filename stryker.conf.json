@@ -1,5 +1,5 @@
 {
-    "mutate": ["src/**/*.ts"],
+    "mutate": ["src/**/*.spec.ts"],
     "testRunner": "jest",
     "testFramework": "jest",
     "reporter": ["html"],

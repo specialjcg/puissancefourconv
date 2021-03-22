@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from '@angular/core';
 import { AppComponent } from './app.component';
 import { TablpuissComponent } from '../tablpuiss/tablpuiss.component';
 import { HttpClientModule } from '@angular/common/http';

@@ -21,6 +21,7 @@
     },
     "allowSyntheticDefaultImports": true,
     "sourceMap": false,
+    "moduleResolution": "node",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,

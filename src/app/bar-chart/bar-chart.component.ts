@@ -26,6 +26,7 @@ export class BarChartComponent implements OnInit, OnChanges {
   constructor() {
     this.width = 960 - this.margin.left - this.margin.right;
     this.height = 500 - this.margin.top - this.margin.bottom;
+    this.data = [];
   //  this.data = [5, 10, 20, 30, 40, 50, 80];
   }
 
@@ -77,8 +78,8 @@ export class BarChartComponent implements OnInit, OnChanges {
       .enter()
       .append('text')
       .text(d => parseInt(d, 0))
-      .attr('x', d => this.x(this.data.indexOf(d)) + this.x.bandwidth() / 2+10)
-      .attr('y', d => this.y(d) +14)
+      .attr('x', d => this.x(this.data.indexOf(d)) + this.x.bandwidth() / 2 + 10)
+      .attr('y', d => this.y(d) + 14)
       .attr('font-family', 'Lucida Console')
       .attr('font-size', '12px')
       .attr('font-weight', 'bold')
