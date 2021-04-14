@@ -65,7 +65,7 @@
 
           "options": {
             "browserTarget": "mentoringhexa:build",
-            "port": 4204
+            "port": 4205
           },
           "configurations": {
             "production": {

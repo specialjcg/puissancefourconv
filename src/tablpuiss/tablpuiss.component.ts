@@ -27,6 +27,7 @@ export class TablpuissComponent implements OnInit {
   private bluePass: boolean;
   private inc: number;
   private moyenne: number;
+  private interval: number;
 
 
   constructor(private DQNService: HttpPuissanceRepository, private cdr: ChangeDetectorRef, private sanitizer: DomSanitizer) {
@@ -54,7 +55,7 @@ export class TablpuissComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.lastscore = 0;
+    this.lastscore = 88;
     this.moyenne = 0;
     this.inc = 0;
     this.alter = true;
@@ -67,6 +68,21 @@ export class TablpuissComponent implements OnInit {
     this.bluePass = true;
     this.datared = [];
     this.databar = [];
+    this.grid.winner = 0;
+    /* this.interval = setInterval(() => {
+       this.DQNService.localtime().then(
+         data => { this.grid.gridColumn = data; }
+
+       );
+     }, 500);*/
+
+
+  }
+
+  ngOnDestroy(): void {
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
   }
 
   print(column: number, row: number): Ring {
@@ -79,39 +95,58 @@ export class TablpuissComponent implements OnInit {
   async game(column: number): Promise<void> {
 
     this.redPass = true;
-    this.grid.addRingPlayerRed(column + 1);
     this.cdr.detectChanges();
-    if (this.grid.win() && this.vainqueur === '') {
-      this.vainqueur = 'Red Win';
-      this.grid.getscoreRed = -0.1;
-      this.grid.getscoreBlue = -0.1;
-      this.cdr.detectChanges();
-    } else {
-      this.grid.getscoreRed = this.grid.rewardRed();
-      this.grid.getscoreBlue = this.grid.rewardBlue();
-    }
-    while (this.redPass && !this.grid.win()) {
-      await this.DQNService.ActionBlue(this.grid).toPromise().then((data) => {
-        this.proposition = data;
-        if (this.grid.isInGrid(this.proposition + 1)) {
-          this.grid.addRingPlayerBlue(this.proposition + 1);
-          if (this.grid.win() && this.vainqueur === '') {
-            this.vainqueur = 'blue Win';
-            this.grid.getscoreRed = -0.1;
-            this.grid.getscoreBlue = -0.1;
-            this.cdr.detectChanges();
-          }
-          this.redPass = false;
-          this.grid.getscoreBlue = -1;
-        } else {
-          this.redPass = true;
-        }
+    if (this.redPass && !this.grid.win()) {
+      if (this.grid.isInGrid(column + 1)) {
+        this.grid.addRingPlayerRed(column + 1);
         this.grid.getscoreRed = this.grid.rewardRed();
         this.grid.getscoreBlue = this.grid.rewardBlue();
-
-      });
-
+        if (this.grid.win()) {
+          this.grid.getscoreRed = 1;
+          this.grid.getscoreBlue = -1;
+          this.grid.winner = Ring.RED;
+          this.listGame.push(1);
+          this.gridRedWin.push(this.grid);
+          this.redPass = false;
+          this.vainqueur = 'Red Win';
+        }
+        this.bluePass = true;
+      }
     }
+
+
+    if (this.bluePass && !this.grid.win()) {
+      await this.DQNService.ActionBlue(this.grid).toPromise().then(async (data) => {
+          this.proposition = data;
+          if (this.grid.isInGrid(this.proposition + 1)) {
+            this.grid.addRingPlayerBlue(this.proposition + 1);
+            this.grid.getscoreRed = this.grid.rewardRed();
+            this.grid.getscoreBlue = this.grid.rewardBlue();
+
+            if (this.grid.win()) {
+              this.grid.getscoreRed = -1;
+              this.grid.getscoreBlue = 1;
+              this.grid.winner = Ring.BLUE;
+              this.vainqueur = 'blue Win';
+
+
+              this.listGame.push(2);
+              this.gridBlueWin.push(this.grid);
+
+
+              this.bluePass = false;
+            }
+            this.redPass = true;
+          } else {
+            this.redPass = false;
+            this.bluePass = true;
+            this.grid.getscoreBlue = -1;
+          }
+        }
+      );
+    }
+    this.grid.getscoreRed = this.grid.rewardRed();
+    this.grid.getscoreBlue = this.grid.rewardBlue();
     this.cdr.detectChanges();
   }
 
@@ -157,6 +192,7 @@ export class TablpuissComponent implements OnInit {
     this.redPass = true;
     this.bluePass = true;
     this.datared = [];
+    this.grid.winner = 0;
   }
 
   async gameIA(): Promise<void> {
@@ -242,31 +278,35 @@ export class TablpuissComponent implements OnInit {
   }
 
   async gamelearnIA(): Promise<void> {
-    while (this.lastscore < 100) {
+
+    for (let moy = 1; moy < 200; moy++) {
+      await this.loadbrain1();
       this.reset();
-      for (let i = 0; i < 200; i++) {
+      for (let i = 0; i < 50; i++) {
         this.grid = new Grid();
+        this.grid.winner = 0;
         this.redPass = true;
-        /* if (i % 2 === 0) {
-           col = Math.trunc(Math.random() * 7) + 1;
-         } else {
-           col = Math.trunc(Math.random() * 7) + 1;
-         }*/
+
+        /*
+                let col = Math.trunc(Math.random() * 7) + 1;
+        */
+
+
         while ((this.grid.win() !== true && !this.grid.full())) {
           let col = this.littleia(this.grid);
 
-          /* if (i % 4 === 0) {
-             col = Math.trunc(Math.random() * 7) + 1;
-           } else if (i % 2 === 0) {
-             col = (col + 1) % 7 + 1;
-           }*/
+
+          /*  col = Math.trunc(Math.random() * 7) + 1;*/
+
           if (this.redPass && !this.grid.win()) {
             if (this.grid.isInGrid(col)) {
               this.grid.addRingPlayerRed(col);
-
+              this.grid.getscoreRed = this.grid.rewardRed();
+              this.grid.getscoreBlue = this.grid.rewardBlue();
               if (this.grid.win()) {
                 this.grid.getscoreRed = 1;
                 this.grid.getscoreBlue = -1;
+                this.grid.winner = Ring.RED;
                 this.listGame.push(1);
                 this.gridRedWin.push(this.grid);
                 await this.DQNService.DqnBlue(this.grid).toPromise().then(() => {
@@ -280,6 +320,9 @@ export class TablpuissComponent implements OnInit {
             } else {
               this.bluePass = false;
               col = Math.trunc(Math.random() * 7) + 1;
+              /*
+                            col = col % 7 + 1;
+              */
               this.grid.getscoreRed = -1;
             }
           }
@@ -289,13 +332,21 @@ export class TablpuissComponent implements OnInit {
             await this.DQNService.DqnBlue(this.grid).toPromise().then(async (data) => {
                 this.proposition = data;
                 if (this.grid.isInGrid(this.proposition + 1)) {
+                  await this.DQNService.DqnBlue(this.grid).toPromise().then(() => {
+
+                  });
                   this.grid.addRingPlayerBlue(this.proposition + 1);
+                  this.grid.getscoreRed = this.grid.rewardRed();
+                  this.grid.getscoreBlue = this.grid.rewardBlue();
+
                   if (this.grid.win()) {
                     this.grid.getscoreRed = -1;
                     this.grid.getscoreBlue = 1;
+                    this.grid.winner = Ring.BLUE;
                     await this.DQNService.DqnBlue(this.grid).toPromise().then(() => {
 
                     });
+
                     this.listGame.push(2);
                     this.gridBlueWin.push(this.grid);
 
@@ -314,21 +365,20 @@ export class TablpuissComponent implements OnInit {
           this.grid.getscoreRed = this.grid.rewardRed();
           this.grid.getscoreBlue = this.grid.rewardBlue();
         }
-        const redwin = this.listGame.filter(value => value === 1).length / this.listGame.length * 100;
-        const bluewin = this.listGame.filter(value => value === 2).length / this.listGame.length * 100;
+        const redwin = this.listGame.filter(value => value === 1).length;
+        const bluewin = this.listGame.filter(value => value === 2).length;
         this.listQ.push({red: redwin, blue: bluewin});
 
         this.dataSource = [{
           numberGame: this.listQ.length,
-          blue: this.moyenneblue(this.listQ),
-          red: this.moyennered(this.listQ)
+          blue: (bluewin / this.listQ.length) * 100,
+          red: (redwin / this.listQ.length) * 100
         }];
         this.datared = [...this.datared, {
           numberGame: this.listQ.length,
-          blue: this.moyenneblue(this.listQ),
-          red: this.moyennered(this.listQ)
+          blue: (bluewin / this.listQ.length) * 100,
+          red: (redwin / this.listQ.length) * 100
         }];
-        this.cdr.detectChanges();
 
 
       }
@@ -336,12 +386,13 @@ export class TablpuissComponent implements OnInit {
         this.lastscore = this.datared.reduce((memo, val) => memo + val.blue, 0) / this.datared.length;
 
         await this.savebrain1();
-        await this.loadbrain1();
+
       }
+
       this.databar = [...this.databar, this.datared.reduce((memo, val) => memo + val.blue, 0) / this.datared.length];
-      await this.DQNService.learn().toPromise().then(() => {
-        this.cdr.detectChanges();
-      });    }
+      await this.learnlocal();
+
+    }
 
   }
 
@@ -352,7 +403,7 @@ export class TablpuissComponent implements OnInit {
       this.redPass = true;
 
 
-      while ((this.grid.win() !== true && !this.grid.full()) ) {
+      while ((this.grid.win() !== true && !this.grid.full())) {
         const col = Math.trunc(Math.random() * 7) + 1;
         if (this.redPass && !this.grid.win()) {
           if (this.grid.isInGrid(col)) {
@@ -404,13 +455,13 @@ export class TablpuissComponent implements OnInit {
 
       this.dataSource = [{
         numberGame: this.listQ.length,
-        blue: this.moyenneblue(this.listQ),
-        red: this.moyennered(this.listQ)
+        blue: redwin,
+        red: bluewin
       }];
       this.datared = [...this.datared, {
         numberGame: this.listQ.length,
-        blue: this.moyenneblue(this.listQ),
-        red: this.moyennered(this.listQ)
+        blue: redwin,
+        red: bluewin
       }];
 
 
@@ -431,21 +482,21 @@ export class TablpuissComponent implements OnInit {
   }
 
   moyennered(listQ: { red: number; blue: number }[]): number {
-    if (listQ.length > 10) {
-      return listQ.slice(-10, this.listQ.length).reduce((acc, val) => val.red + acc, 0) / 10;
+    if (listQ.length > 1) {
+      return listQ.slice(-1, this.listQ.length).reduce((acc, val) => val.red + acc, 0) / 2;
     }
-    return 100;
+    return 0;
   }
 
   moyenneblue(listQ: { red: number; blue: number }[]): number {
-    if (listQ.length > 10) {
-      return listQ.slice(-10, this.listQ.length).reduce((acc, val) => val.blue + acc, 0) / 10;
+    if (listQ.length > 1) {
+      return listQ.slice(-1, this.listQ.length).reduce((acc, val) => val.blue + acc, 0) / 2;
     }
-    return 100;
+    return 0;
   }
 
   savebrain1(): void {
-    this.DQNService.savebrain1().subscribe(data => console.log(JSON.stringify(data)));
+    this.DQNService.savebrain1().then();
   }
 
   savebrain2(): void {
@@ -457,17 +508,28 @@ export class TablpuissComponent implements OnInit {
   }
 
   loadbrain1(): void {
-    this.DQNService.loadbrain1().subscribe(data => console.log(JSON.stringify(data)));
+    this.DQNService.loadbrain1().then(data => console.log(JSON.stringify(data)));
   }
 
-  learn(): void {
-    this.DQNService.learn().subscribe();
+  async learn(): Promise<void> {
+    await this.DQNService.learn().then();
+  }
+
+  async learnlocal(): Promise<void> {
+
+    await this.DQNService.local().then(
+      data => {
+        this.grid.gridColumn = data;
+      }
+    );
+
   }
 
   allGridRedWin(): void {
     this.grid = this.gridRedWin[this.gridRedWin.length - 1 - this.inc];
     this.inc++;
   }
+
   private littleia(grid: Grid): number {
     let col = 1;
     let bestcol = 0;
@@ -498,8 +560,9 @@ export class TablpuissComponent implements OnInit {
         col++;
       }
     }
-    if (bestcol === 0 || !this.grid.isInGrid(bestcol) ) {
+    if (bestcol === 0 || !this.grid.isInGrid(bestcol)) {
       bestcol = Math.trunc(Math.random() * 7) + 1;
+
     }
     return bestcol;
   }

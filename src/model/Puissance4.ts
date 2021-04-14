@@ -15,7 +15,7 @@ export const SECONDREWARD = 0.7;
 
 export const THIRDREWARD = 0.5;
 
-export const LASTREWARD = 0.2;
+export const LASTREWARD = 0;
 
 export class Grid {
   gridColumn: COLUMN[];
@@ -26,6 +26,7 @@ export class Grid {
   gridDiagRight: DIAG[];
   private readonly LINE = 6;
   private readonly COLUMN = 7;
+  winner: Ring;
 
   constructor() {
     this.gridColumn = Array.from({length: this.COLUMN}).map(() => []);
@@ -89,7 +90,7 @@ export class Grid {
       || this.IsFourRingFollowingDiagRight(Ring.RED) || this.IsFourRingFollowingInColumn(Ring.RED)) {
       return -1;
 
-    } else if (this.IsLastRingInColumn(Ring.BLUE, Ring.RED) || this.IsLastRingInLine(Ring.BLUE, Ring.RED)
+    } /*else if (this.IsLastRingInColumn(Ring.BLUE, Ring.RED) || this.IsLastRingInLine(Ring.BLUE, Ring.RED)
       || this.IsLastRingInDiagLeft(Ring.BLUE, Ring.RED) || this.IsLastRingInDiagRight(Ring.BLUE, Ring.RED)) {
       return FIRSTREWARD;
     } else if (this.IsThreeRingInColumn(Ring.BLUE) || this.IsThreeRingInLine(Ring.BLUE)
@@ -98,12 +99,11 @@ export class Grid {
     } else if (this.IsTwoRingInColumn(Ring.BLUE) || this.IsTwoRingInLine(Ring.BLUE)
       || this.IsTwoRingInDiagLeft(Ring.BLUE) || this.IsTwoRingInDiagRight(Ring.BLUE)) {
       return THIRDREWARD;
-    }
+    }*/
     return LASTREWARD;
   }
 
   scoreRed(): number {
-
     if (this.IsFourRingFollowingInLine(Ring.RED) || this.IsFourRingFollowingDiagLeft(Ring.RED)
       || this.IsFourRingFollowingDiagRight(Ring.RED) || this.IsFourRingFollowingInColumn(Ring.RED)) {
       return 1;
@@ -111,7 +111,7 @@ export class Grid {
       || this.IsFourRingFollowingDiagRight(Ring.BLUE) || this.IsFourRingFollowingInColumn(Ring.BLUE)) {
       return -1;
 
-    } else if (this.IsLastRingInColumn(Ring.RED, Ring.BLUE) || this.IsLastRingInLine(Ring.RED, Ring.BLUE)
+    } /*else if (this.IsLastRingInColumn(Ring.RED, Ring.BLUE) || this.IsLastRingInLine(Ring.RED, Ring.BLUE)
       || this.IsLastRingInDiagLeft(Ring.RED, Ring.BLUE) || this.IsLastRingInDiagRight(Ring.RED, Ring.BLUE)) {
       return FIRSTREWARD;
     } else if (this.IsThreeRingInColumn(Ring.RED) || this.IsThreeRingInLine(Ring.RED)
@@ -120,7 +120,7 @@ export class Grid {
     } else if (this.IsTwoRingInColumn(Ring.RED) || this.IsTwoRingInLine(Ring.RED)
       || this.IsTwoRingInDiagLeft(Ring.RED) || this.IsTwoRingInDiagRight(Ring.RED)) {
       return THIRDREWARD;
-    }
+    }*/
     return LASTREWARD;
   }
 
@@ -133,27 +133,28 @@ export class Grid {
   rewardBlue(): number {
     const scoreRed = this.scoreRed();
     const scoreBlue = this.scoreBlue();
-    if (scoreBlue > scoreRed) {
+    /*if (scoreBlue > scoreRed) {
       return scoreBlue;
     }
-    if (scoreRed === scoreBlue) {
+    if (this.numberBlue() >= this.numberRed()) {
       return scoreBlue;
-    }
+    }*/
+    return scoreBlue;
 
-    return -scoreRed;
+
   }
 
   rewardRed(): number {
     const scoreRed = this.scoreRed();
-    const scoreBlue = this.scoreBlue();
+    /*const scoreBlue = this.scoreBlue();
     if (scoreRed > scoreBlue) {
       return scoreRed;
     }
-    if (scoreRed === scoreBlue) {
+    if (this.numberBlue() >= this.numberRed()) {
       return scoreRed;
-    }
+    }*/
+    return scoreRed;
 
-    return -scoreBlue;
 
   }
 
@@ -166,19 +167,23 @@ export class Grid {
 
   IsLastRingInLine(ring: Ring, ringAdverse: Ring): boolean {
     return this.gridLine.some(line => {
-      return line.toString().includes([ring, ringAdverse, ring].toString()) ||
-        line.toString().includes([ring, ringAdverse, ringAdverse, ring].toString()) ||
-        line.toString().includes([ring, ringAdverse, ringAdverse, ringAdverse, ring].toString()) ||
-        line.slice(0, 4).toString().includes([ringAdverse, ringAdverse, ringAdverse, ring].toString());
+      return line.toString().includes([ringAdverse, ringAdverse, ringAdverse, ring, 0].toString());
 
     });
   }
 
   IsThreeRingInLine(ring: Ring): boolean {
     return this.gridLine.some(line => {
-      return line.toString().includes([ring, ring, ring].toString()) ||
+      return line.toString().includes([ring, ring, ring, 0].toString()) ||
+        line.toString().includes([0, ring, ring, ring].toString()) ||
         line.toString().includes([ring, ring, 0, ring].toString()) ||
         line.toString().includes([ring, 0, ring, ring].toString());
+    });
+  }
+
+  IsThreeRingInColumn(ring: Ring): boolean {
+    return this.gridColumn.some(col => {
+      return col.slice(-3, col.length).toString().includes([ring, ring, ring].toString()) && col.length < this.LINE;
     });
   }
 
@@ -229,47 +234,60 @@ export class Grid {
     });
   }
 
-  IsThreeRingInColumn(ring: Ring): boolean {
-    return this.gridColumn.some(col => {
-      return col.toString().includes([ring, ring, ring, 0].toString());
-    });
-  }
-
   private IsThreeRingInDiagLeft(ring: Ring): boolean {
-    return this.gridDiagLeft.filter(linediag => linediag.length > 3).some(line => {
-      return line.slice(-3, line.length).toString().includes([ring, ring, ring].toString());
+    return this.gridDiagLeft.some(line => {
+      return line.toString().includes([ring, ring, ring, 0].toString()) ||
+        line.toString().includes([0, ring, ring, ring].toString()) ||
+        line.toString().includes([ring, ring, 0, ring].toString()) ||
+        line.toString().includes([ring, 0, ring, ring].toString());
     });
   }
 
   private IsThreeRingInDiagRight(ring: Ring): boolean {
-    return this.gridDiagRight.filter(linediag => linediag.length > 3).some(line => {
-      return line.slice(-3, line.length).toString().includes([ring, ring, ring].toString());
+    return this.gridDiagRight.some(line => {
+      return line.toString().includes([ring, ring, ring, 0].toString()) ||
+        line.toString().includes([0, ring, ring, ring].toString()) ||
+        line.toString().includes([ring, ring, 0, ring].toString()) ||
+        line.toString().includes([ring, 0, ring, ring].toString());
     });
   }
 
   private IsTwoRingInColumn(ring: Ring): boolean {
     return this.gridColumn.some(col => {
-      return col.toString().includes([ring, ring, 0].toString());
+      return col.slice(-2, col.length).toString().includes([ring, ring].toString()) && col.length < this.LINE - 2;
     });
   }
 
   private IsTwoRingInLine(ring: Ring): boolean {
     return this.gridLine.some(line => {
-      return line.toString().includes([ring, ring].toString()) ||
-        line.toString().includes([ring, 0, ring].toString());
+      return line.toString().includes([ring, ring, 0, 0].toString()) ||
+        line.toString().includes([0, 0, ring, ring].toString()) ||
+        line.toString().includes([ring, 0, 0, ring].toString());
     });
   }
 
   private IsTwoRingInDiagLeft(ring: Ring): boolean {
-    return this.gridDiagLeft.filter(linediag => linediag.length > 3).some(line => {
-      return line.slice(-2, line.length).toString().includes([ring, ring].toString());
+    return this.gridDiagLeft.some(line => {
+      return line.toString().includes([ring, ring, 0].toString()) ||
+        line.toString().includes([0, ring, ring].toString()) ||
+        line.toString().includes([ring, 0, ring].toString());
     });
   }
 
   private IsTwoRingInDiagRight(ring: Ring): boolean {
-    return this.gridDiagRight.filter(linediag => linediag.length > 3).some(line => {
-      return line.slice(-2, line.length).toString().includes([ring, ring].toString());
+    return this.gridDiagRight.some(line => {
+      return line.toString().includes([ring, ring, 0].toString()) ||
+        line.toString().includes([0, ring, ring].toString()) ||
+        line.toString().includes([ring, 0, ring].toString());
     });
+  }
+
+  private numberBlue(): number {
+    return this.gridColumn.reduce((noRing, column) => noRing + column.filter(ring => ring === Ring.BLUE).length, 0);
+  }
+
+  private numberRed(): number {
+    return this.gridColumn.reduce((noRing, column) => noRing + column.filter(ring => ring === Ring.RED).length, 0);
   }
 }
 

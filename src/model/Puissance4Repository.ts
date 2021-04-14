@@ -5,10 +5,11 @@ export interface Puissance4Repository {
   DqnRed(grid: Grid): Observable<number>;
   DqnBlue(grid: Grid): Observable<number>;
   ActionBlue(grid: Grid): Observable<number>;
-  savebrain1(): Observable<string> ;
+
+  savebrain1(): Promise<string> ;
   savebrain2(): Observable<string> ;
   loadbrain2(): Observable<string>;
-  loadbrain1(): Observable<string>;
+  loadbrain1(): Promise<string>;
 
   get(): Promise<number>;
 }

@@ -3,7 +3,7 @@
 
   <ng-container >
     <tr *ngFor="let row of [0,1,2,3,4,5].reverse()">
-      <td *ngFor="let column of [0,1,2,3,4,5,6]" (click)="gameManuel(column)">
+      <td *ngFor="let column of [0,1,2,3,4,5,6]" (click)="game(column)">
         <span *ngIf="print(column,row)===1" class="dotRED"></span>
         <span *ngIf="print(column,row)===2" class="dotBLUE"></span>
         <span *ngIf="print(column,row)===0" class="dotTransparent"></span>
@@ -19,7 +19,7 @@
   <button class="btn" (click)="savebrain2()">savered</button>
 
 <button class="btn" (click)="loadbrain1()">loadblue</button>
-  <button class="btn" (click)="learn()">learn</button>
+  <button class="btn" (click)="learnlocal()">learn</button>
   <button class="btn" >{{this.lastscore}}</button>
   <button class="btn"  (click)="gameIATest()">random</button>
   <button class="btn" >red:{{this.grid.rewardRed()}}</button>

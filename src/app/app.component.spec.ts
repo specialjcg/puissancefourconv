@@ -78,7 +78,7 @@ describe('test puissant four', () => {
     expect(grid.numberRings(2)).toEqual(6);
     grid.scoreBlue();
 
-    expect(grid.scoreRed()).toEqual(THIRDREWARD);
+    expect(grid.scoreRed()).toEqual(LASTREWARD);
   });
   it('should  not adding  ring beyond the maximun of the grid in width', () => {
 
@@ -445,7 +445,7 @@ describe('test puissant four', () => {
     grid.getscoreBlue = grid.rewardBlue();
     grid.getscoreRed = grid.rewardRed();
     expect(grid.getscoreBlue).toEqual(0.9);
-    expect(grid.getscoreRed).toEqual(-0.9);
+    expect(grid.getscoreRed).toEqual(-SECONDREWARD);
   });
   it('should  score grid to when line not complete', () => {
     grid.addRingPlayerRed(1);
@@ -460,7 +460,7 @@ describe('test puissant four', () => {
     grid.getscoreBlue = grid.rewardBlue();
     grid.getscoreRed = grid.rewardRed();
     expect(grid.getscoreBlue).toEqual(0.7);
-    expect(grid.getscoreRed).toEqual(-0.7);
+    expect(grid.getscoreRed).toEqual(LASTREWARD);
   });
   it('should  score grid to  column not complete', () => {
     grid.addRingPlayerRed(1);
@@ -470,9 +470,8 @@ describe('test puissant four', () => {
     grid.addRingPlayerRed(6);
     grid.getscoreBlue = grid.rewardBlue();
     grid.getscoreRed = grid.rewardRed();
-    expect(grid.IsThreeRingInColumn(Ring.RED)).toBeTruthy();
     expect(grid.getscoreBlue).toEqual(0.7);
-    expect(grid.getscoreRed).toEqual(-0.7);
+    expect(grid.getscoreRed).toEqual(LASTREWARD);
 
   });
   it('should  score grid blue < red to  column not complete', () => {
@@ -483,23 +482,83 @@ describe('test puissant four', () => {
     grid.addRingPlayerBlue(4);
     grid.getscoreBlue = grid.rewardBlue();
     grid.getscoreRed = grid.rewardRed();
-    expect(grid.getscoreBlue).toEqual(0.9);
-    expect(grid.getscoreRed).toEqual(-0.9);
+    expect(grid.getscoreBlue).toEqual(LASTREWARD);
+    expect(grid.getscoreRed).toEqual(SECONDREWARD);
 
   });
-  it('should  score grid blue < red to  column with  3 red ', () => {
+  it('should  score grid red for 4 red', () => {
+    grid.addRingPlayerRed(2);
+    grid.addRingPlayerRed(2);
+    grid.addRingPlayerRed(2);
+    grid.addRingPlayerRed(2);
+    expect(grid.scoreRed()).toEqual(1);
+
+  });
+  it('should  score grid red for 3 red', () => {
+
+    grid.addRingPlayerRed(2);
+    grid.addRingPlayerRed(2);
+    grid.addRingPlayerRed(2);
+    expect(grid.scoreRed()).toEqual(.7);
+
+  });
+  it('should  score grid red for 3 red an blue', () => {
+    grid.addRingPlayerBlue(2);
     grid.addRingPlayerBlue(2);
     grid.addRingPlayerBlue(2);
     grid.addRingPlayerRed(2);
     grid.addRingPlayerRed(2);
     grid.addRingPlayerRed(2);
-/*
-    grid.addRingPlayerBlue(2);
-*/
-    grid.getscoreBlue = grid.rewardBlue();
-    grid.getscoreRed = grid.rewardRed();
-    expect(grid.getscoreBlue).toEqual(-0.7);
-    expect(grid.getscoreRed).toEqual(0.7);
+
+    expect(grid.scoreRed()).toEqual(LASTREWARD);
+
+  });
+  it('should  score grid red for 2 red', () => {
+    grid.addRingPlayerRed(2);
+    grid.addRingPlayerRed(2);
+    expect(grid.scoreRed()).toEqual(.5);
+
+  });
+  it('should  score grid red for 1 red', () => {
+    grid.addRingPlayerRed(2);
+    expect(grid.scoreRed()).toEqual(LASTREWARD);
+
+  });
+  it('should  score grid red for 1 red in line ', () => {
+    grid.addRingPlayerRed(1);
+    grid.addRingPlayerRed(2);
+    grid.addRingPlayerRed(3);
+    grid.addRingPlayerBlue(4);
+
+    expect(grid.scoreRed()).toEqual(LASTREWARD);
+    expect(grid.scoreBlue()).toEqual(.9);
+
+  });
+  it('should  score grid red for 2blue in line ', () => {
+    grid.addRingPlayerBlue(1);
+    grid.addRingPlayerRed(2);
+    grid.addRingPlayerRed(3);
+    grid.addRingPlayerRed(4);
+    grid.addRingPlayerBlue(5);
+
+    expect(grid.IsLastRingInLine(Ring.BLUE, Ring.RED)).toBeTruthy();
+    expect(grid.scoreRed()).toEqual(LASTREWARD);
+    expect(grid.scoreBlue()).toEqual(.9);
+
+  });
+  it('should  score grid red for 3 blue in line ', () => {
+    grid.addRingPlayerBlue(5);
+    grid.addRingPlayerBlue(6);
+    expect(grid.scoreBlue()).toEqual(0.5);
+    grid.addRingPlayerBlue(1);
+    grid.addRingPlayerRed(2);
+    grid.addRingPlayerRed(3);
+    grid.addRingPlayerRed(4);
+
+    expect(grid.IsLastRingInLine(Ring.BLUE, Ring.RED)).toBeFalsy();
+
+    expect(grid.scoreRed()).toEqual(LASTREWARD);
+    expect(grid.scoreBlue()).toEqual(LASTREWARD);
 
   });
 });
